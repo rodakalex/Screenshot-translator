@@ -1,7 +1,7 @@
 import tkinter as tk
 from translate import Translator
 
-from make_screen import take_screenshot
+from make_screen import take_screenshot, get_formatter_text
 
 
 def translate_text(text, target_language='ru'):
@@ -18,14 +18,14 @@ def select_all(event):
 
 
 def copy_text():
-    # Копирование текста из поля
     text = text_entry.get("1.0", tk.END)
     window.clipboard_clear()
     window.clipboard_append(text)
 
 
 def from_screen():
-    text = take_screenshot()
+    take_screenshot()
+    text = get_formatter_text()
     text_entry.delete("1.0", tk.END)
     text_entry.insert(tk.END, text)
     ru_text = translate_text(text)
