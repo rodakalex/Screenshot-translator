@@ -30,11 +30,11 @@ class ScreenshotApplication(tk.Tk):
         self.rect = None
         self.overrideredirect(True)
         self.wait_visibility(self)
-        self.wm_attributes("-alpha", 0)
-        self.geometry(f"1024x768+0+0")
+        self.wm_attributes("-alpha", 0.01)
+        #self.geometry(f"1024x768+0+0")
 
         # Полный экран
-        # self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
+        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}+0+0")
 
     def on_button_press(self, event):
         self.begin_x = self.canvas.canvasx(event.x)
