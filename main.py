@@ -2,6 +2,7 @@ import tkinter as tk
 import config
 from make_screen import take_screenshot, get_formatter_text
 import pyrogram
+import time
 
 app = pyrogram.Client(config.name, config.api_id, config.api_hash)
 
@@ -35,6 +36,9 @@ def from_screen():
     text = get_formatter_text()
     text_entry.delete("1.0", tk.END)
     text_entry.insert(tk.END, text)
+    app.start()
+    app.send_message(chat_id='YTranslateBot', text=text)
+    app.stop()
     app.run(get_last_message())
 
 
