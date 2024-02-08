@@ -1,20 +1,27 @@
 import tkinter as tk
-from translate import Translator
-
+import config
 from make_screen import take_screenshot, get_formatter_text
+import pyrogram
 
-
-def translate_text(text, target_language='ru'):
-    translator = Translator(to_lang=target_language)
-    return translator.translate(text)
-
-
-def _translate():
-    translation_label.config(text=translate_text(text_entry.get("1.0", "end-1c")))
+app = pyrogram.Client(config.name, config.api_id, config.api_hash)
 
 
 def select_all(event):
     event.widget.tag_add("sel", "1.0", "end")
+
+
+async def get_last_message():
+    async with app:
+        async for message in app.get_chat_history(chat_id='YTranslateBot', limit=1, offset_id=-1):
+            translation_label.config(text=message.text)
+
+
+def translate_text():
+    text = text_entry.get("1.0", tk.END)
+    app.start()
+    app.send_message(chat_id='YTranslateBot', text=text)
+    app.stop()
+    app.run(get_last_message())
 
 
 def copy_text():
@@ -28,8 +35,7 @@ def from_screen():
     text = get_formatter_text()
     text_entry.delete("1.0", tk.END)
     text_entry.insert(tk.END, text)
-    ru_text = translate_text(text)
-    translation_label.config(text=translate_text(ru_text))
+    app.run(get_last_message())
 
 
 if __name__ == '__main__':
@@ -45,7 +51,7 @@ if __name__ == '__main__':
     translation_label.pack()
 
     # Создание и размещение кнопки "Перевести"
-    translate_button = tk.Button(window, text="Перевести", command=_translate)
+    translate_button = tk.Button(window, text="Перевести", command=translate_text)
     translate_button.pack(side="left", padx=10, pady=10)
 
     # Создание и размещение кнопки "Скриншот"
