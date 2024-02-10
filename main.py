@@ -7,22 +7,22 @@ import time
 app = pyrogram.Client(config.name, config.api_id, config.api_hash)
 
 
-def select_all(event):
-    event.widget.tag_add("sel", "1.0", "end")
-
-
-async def get_last_message():
+async def get_last_message(text):
     async with app:
+        await app.send_message(chat_id='YTranslateBot', text=text)
+        time.sleep(1)
         async for message in app.get_chat_history(chat_id='YTranslateBot', limit=1, offset_id=-1):
             translation_label.config(text=message.text)
+            print(message.text)
 
 
 def translate_text():
     text = text_entry.get("1.0", tk.END)
-    app.start()
-    app.send_message(chat_id='YTranslateBot', text=text)
-    app.stop()
-    app.run(get_last_message())
+    app.run(get_last_message(text))
+
+
+def select_all(event):
+    event.widget.tag_add("sel", "1.0", "end")
 
 
 def copy_text():
@@ -36,10 +36,7 @@ def from_screen():
     text = get_formatter_text()
     text_entry.delete("1.0", tk.END)
     text_entry.insert(tk.END, text)
-    app.start()
-    app.send_message(chat_id='YTranslateBot', text=text)
-    app.stop()
-    app.run(get_last_message())
+    app.run(get_last_message(text))
 
 
 if __name__ == '__main__':
