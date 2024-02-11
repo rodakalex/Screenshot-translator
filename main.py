@@ -1,24 +1,40 @@
+import asyncio
 import tkinter as tk
 import config
 from make_screen import take_screenshot, get_formatter_text
 import pyrogram
-import time
 
 app = pyrogram.Client(config.name, config.api_id, config.api_hash)
 
 
 async def get_last_message(text):
-    async with app:
-        await app.send_message(chat_id='YTranslateBot', text=text)
-        time.sleep(1)
-        async for message in app.get_chat_history(chat_id='YTranslateBot', limit=1, offset_id=-1):
-            translation_label.config(text=message.text)
-            print(message.text)
+    try:
+        async with app:
+            await app.send_message(chat_id='YTranslateBot', text=text)
+            await asyncio.sleep(1)
+            async for message in app.get_chat_history(chat_id='YTranslateBot', limit=1, offset_id=-1):
+                global mMessage_text
+                mMessage_text = message.text
+                print(message.text)
+    except Exception as e:
+        print(e)
+
+
+def from_screen():
+    take_screenshot()
+    text = get_formatter_text()
+    text_entry.delete("1.0", tk.END)
+    text_entry.insert(tk.END, text)
+    app.run(get_last_message(text))
+    translation_label.config(text=mMessage_text)
+    # app.stop()
 
 
 def translate_text():
     text = text_entry.get("1.0", tk.END)
     app.run(get_last_message(text))
+    translation_label.config(text=mMessage_text)
+    # app.stop()
 
 
 def select_all(event):
@@ -29,14 +45,6 @@ def copy_text():
     text = text_entry.get("1.0", tk.END)
     window.clipboard_clear()
     window.clipboard_append(text)
-
-
-def from_screen():
-    take_screenshot()
-    text = get_formatter_text()
-    text_entry.delete("1.0", tk.END)
-    text_entry.insert(tk.END, text)
-    app.run(get_last_message(text))
 
 
 if __name__ == '__main__':
