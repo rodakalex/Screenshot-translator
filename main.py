@@ -27,14 +27,12 @@ def from_screen():
     text_entry.insert(tk.END, text)
     app.run(get_last_message(text))
     translation_label.config(text=mMessage_text)
-    # app.stop()
 
 
 def translate_text():
     text = text_entry.get("1.0", tk.END)
     app.run(get_last_message(text))
     translation_label.config(text=mMessage_text)
-    # app.stop()
 
 
 def select_all(event):

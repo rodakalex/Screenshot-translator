@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QFrame
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 from PyQt5.QtGui import QPainter, QColor, QBrush
 from PyQt5.QtCore import Qt, QRect
 
@@ -55,8 +55,12 @@ class ScreenshotWindow(QMainWindow):
             painter.drawRect(QRect(self.start_x, self.start_y, self.end_x - self.start_x, self.end_y - self.start_y))
 
 
-if __name__ == "__main__":
+def take_screen():
     app = QApplication(sys.argv)
     window = ScreenshotWindow()
     window.showFullScreen()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    take_screen()

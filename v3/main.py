@@ -1,31 +1,67 @@
 import asyncio
+import time
+
 import pyrogram
 import sys
 
-from PyQt5.QtCore import Qt, QRect, QObject, pyqtSignal, QRunnable, pyqtSlot
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
-
-import take_screen
 
 import config
 
 
-class WorkerSignals(QObject):
-    result = pyqtSignal(object)
-
-
-class AsyncWorker(QRunnable):
-    def __init__(self, fn, *args, **kwargs):
+class ScreenshotWindow(QMainWindow):
+    def __init__(self, main_app: QMainWindow):
         super().__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = WorkerSignals()
+        self.setWindowTitle("Screenshot Tool")
+        self.app = main_app
+        self.setGeometry(100, 100, 800, 600)
+        self.label = QLabel(self)
+        self.label.setGeometry(0, 0, 800, 600)
+        self.setWindowOpacity(0)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setMouseTracking(True)
+        self.drawing = False
+        self.start_x, self.start_y = 0, 0
+        self.end_x, self.end_y = 0, 0
 
-    @pyqtSlot()
-    def run(self):
-        result = self.fn(*self.args, **self.kwargs)
-        self.signals.result.emit(result)
+    def closeEvent(self, event):
+        self.app.quit()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.drawing = True
+            self.start_x, self.start_y = event.x(), event.y()
+
+    def mouseMoveEvent(self, event):
+        if self.drawing:
+            self.end_x, self.end_y = event.x(), event.y()
+            self.update()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and self.drawing:
+            self.drawing = False
+            screenshot_rect = QRect(min(self.start_x, self.end_x), min(self.start_y, self.end_y),
+                                    abs(self.end_x - self.start_x), abs(self.end_y - self.start_y))
+            self.setWindowOpacity(0)
+
+            screenshot = QApplication.primaryScreen().grabWindow(0, screenshot_rect.x(), screenshot_rect.y(),
+                                                                 screenshot_rect.width(), screenshot_rect.height())
+            screenshot.save("screenshot.png", "PNG")
+
+    def paintEvent(self, event):
+        if self.drawing:
+            painter = QPainter(self)
+            overlay_color = QColor(255, 255, 255, 100)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(overlay_color))
+            painter.drawRect(QRect(0, 0, self.width(), self.height()))
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(Qt.SolidLine)
+            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setPen(QColor(0, 0, 0))
+            painter.drawRect(QRect(self.start_x, self.start_y, self.end_x - self.start_x, self.end_y - self.start_y))
 
 
 class QLabelBuddy(QDialog):
@@ -33,15 +69,14 @@ class QLabelBuddy(QDialog):
         super().__init__()
         self.layout = None
         self.init_ui()
-        # self.init_async_ui()
         self.app = pyrogram.Client(config.name, config.api_id, config.api_hash)
         self.message_text = None
 
     def translate_text(self):
-        self.app.run(self.acync_translate_text(self.text_to_translate.toPlainText()))
+        self.app.run(self.async_translate_text(self.text_to_translate.toPlainText()))
         self.text_translate.setPlainText(self.message_text)
 
-    async def acync_translate_text(self, text):
+    async def async_translate_text(self, text):
         try:
             await self.app.start()
             await self.app.send_message(chat_id='YTranslateBot', text=text)
@@ -84,20 +119,26 @@ class QLabelBuddy(QDialog):
         translate_btn.setFixedSize(100, 30)
         translate_btn.clicked.connect(self.translate_text)
 
+        screen_btn = QPushButton("&Скриншот", self)
+        screen_btn.setFixedSize(100, 30)
+        screen_btn.clicked.connect(make_screen)  # На эту кнопку должна вызываться подпрограмма
+
         self.layout.addWidget(title_translate)
         self.layout.addWidget(self.text_translate)
         self.layout.addWidget(translate_btn)
+        self.layout.addWidget(screen_btn)
 
-    # async def init_async_ui(self):
-    #     translate_btn = QPushButton("&Перевести", self)
-    #     translate_btn.clicked.connect(await self.acync_translate_text)
-    #     translate_btn.setFixedSize(100, 30)
-    #
-    #     self.layout.addWidget(translate_btn)
+
+def make_screen():
+    screen_window.setWindowOpacity(0.1)
 
 
 if __name__ == '__main__':
     app = QApplication([])
     main = QLabelBuddy()
+    screen_window = ScreenshotWindow(app)
+    screen_window.showFullScreen()
+
     main.show()
-    sys.exit(app.exec_())
+    screen_window.showFullScreen()
+    sys.exit(main.exec_())
