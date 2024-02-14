@@ -1,19 +1,23 @@
 import asyncio
-import time
 
 import pyrogram
 import sys
 
+import pytesseract
+from PIL import Image
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
 
 import config
 
+pytesseract_string = None
+
 
 class ScreenshotWindow(QMainWindow):
-    def __init__(self, main_app: QMainWindow):
+    def __init__(self, main_app):
         super().__init__()
+        self.pytesseract_string = None
         self.setWindowTitle("Screenshot Tool")
         self.app = main_app
         self.setGeometry(100, 100, 800, 600)
@@ -25,9 +29,6 @@ class ScreenshotWindow(QMainWindow):
         self.drawing = False
         self.start_x, self.start_y = 0, 0
         self.end_x, self.end_y = 0, 0
-
-    def closeEvent(self, event):
-        self.app.quit()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -49,6 +50,10 @@ class ScreenshotWindow(QMainWindow):
             screenshot = QApplication.primaryScreen().grabWindow(0, screenshot_rect.x(), screenshot_rect.y(),
                                                                  screenshot_rect.width(), screenshot_rect.height())
             screenshot.save("screenshot.png", "PNG")
+            image = Image.open('screenshot.png')
+            res_text_screen = pytesseract.image_to_string(image, lang='eng').lower().replace("\n", " ")
+            self.app.text_to_translate.setPlainText(res_text_screen)
+            self.app.translate_text()
 
     def paintEvent(self, event):
         if self.drawing:
@@ -67,6 +72,8 @@ class ScreenshotWindow(QMainWindow):
 class QLabelBuddy(QDialog):
     def __init__(self):
         super().__init__()
+        self.text_translate = None
+        self.text_to_translate = None
         self.layout = None
         self.init_ui()
         self.app = pyrogram.Client(config.name, config.api_id, config.api_hash)
@@ -90,9 +97,6 @@ class QLabelBuddy(QDialog):
         finally:
             await self.app.stop()
 
-    def handle_translation(self, result):
-        self.message_text = result
-
     def init_ui(self):
         self.layout = QVBoxLayout(self)
         self.setWindowTitle("Qua!")
@@ -113,6 +117,8 @@ class QLabelBuddy(QDialog):
         self.text_translate = QPlainTextEdit(self)
         self.text_translate.setReadOnly(True)
         self.text_translate.setFixedHeight(100)
+        self.text_translate.setPlainText(pytesseract_string)
+
         title_translate.setBuddy(self.text_translate)
 
         translate_btn = QPushButton("&Перевести", self)
@@ -121,7 +127,7 @@ class QLabelBuddy(QDialog):
 
         screen_btn = QPushButton("&Скриншот", self)
         screen_btn.setFixedSize(100, 30)
-        screen_btn.clicked.connect(make_screen)  # На эту кнопку должна вызываться подпрограмма
+        screen_btn.clicked.connect(lambda make_screen: screen_window.setWindowOpacity(0.1))
 
         self.layout.addWidget(title_translate)
         self.layout.addWidget(self.text_translate)
@@ -129,16 +135,13 @@ class QLabelBuddy(QDialog):
         self.layout.addWidget(screen_btn)
 
 
-def make_screen():
-    screen_window.setWindowOpacity(0.1)
-
-
 if __name__ == '__main__':
-    app = QApplication([])
-    main = QLabelBuddy()
-    screen_window = ScreenshotWindow(app)
+    q_application = QApplication([])
+    q_label_buddy = QLabelBuddy()
+    screen_window = ScreenshotWindow(q_label_buddy)
     screen_window.showFullScreen()
 
-    main.show()
-    screen_window.showFullScreen()
-    sys.exit(main.exec_())
+    q_label_buddy.show()
+    screen_window.show()
+    print('hi')
+    sys.exit(q_label_buddy.exec_())
