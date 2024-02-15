@@ -6,3 +6,6 @@
 /config.py
 /temp.py
 /v3/config.py
+/v3/test.py
+/v3/wtftest.session
+/v3/session.session

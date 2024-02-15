@@ -8,6 +8,8 @@ from PIL import Image
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
+from langchain.schema import HumanMessage, SystemMessage
+from langchain.chat_models.gigachat import GigaChat
 
 import config
 
@@ -79,8 +81,32 @@ class QLabelBuddy(QDialog):
         self.app = pyrogram.Client(config.name, config.api_id, config.api_hash)
         self.message_text = None
 
+    def translate_giga_chat_bot(self, text):
+        # TODO:
+        #  1. Добавить эти инициализации в класс если задан определённый параметр
+        messages = [
+            SystemMessage(
+                content="Переведи текст"
+            )
+        ]
+
+        chat = GigaChat(
+            credentials=config.credentials,
+            verify_ssl_certs=False)
+
+        messages.append(HumanMessage(content=f'Переведи: {text}'))
+        res = chat(messages)
+        messages.append(res)
+
+        self.message_text = res.content
+
     def translate_text(self):
-        self.app.run(self.async_translate_text(self.text_to_translate.toPlainText()))
+        if config.SETTINGS['choose_translate'] == 'gigachat':
+            self.translate_giga_chat_bot(self.text_to_translate.toPlainText())
+
+        else:
+            self.app.run(self.async_translate_text(self.text_to_translate.toPlainText()))
+
         self.text_translate.setPlainText(self.message_text)
 
     async def async_translate_text(self, text):
@@ -143,5 +169,4 @@ if __name__ == '__main__':
 
     q_label_buddy.show()
     screen_window.show()
-    print('hi')
     sys.exit(q_label_buddy.exec_())
