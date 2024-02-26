@@ -4,7 +4,7 @@ import sys
 
 import requests
 from PIL import Image
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QEventLoop
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
 from langchain.schema import HumanMessage, SystemMessage
@@ -44,7 +44,6 @@ class ScreenshotWindow(QMainWindow):
             self.drawing = False
             screenshot_rect = QRect(min(self.start_x, self.end_x), min(self.start_y, self.end_y),
                                     abs(self.end_x - self.start_x), abs(self.end_y - self.start_y))
-            self.setWindowOpacity(0)
 
             screenshot = QApplication.primaryScreen().grabWindow(0, screenshot_rect.x(), screenshot_rect.y(),
                                                                  screenshot_rect.width(), screenshot_rect.height())
@@ -53,6 +52,7 @@ class ScreenshotWindow(QMainWindow):
             res_text_screen = pytesseract.image_to_string(image, lang='eng').lower().replace("\n", " ")
             self.app.text_to_translate.setPlainText(res_text_screen)
             self.app.translate_text()
+            self.close()
 
     def paintEvent(self, event):
         if self.drawing:
@@ -125,7 +125,7 @@ class QLabelBuddy(QDialog):
 
         screen_btn = QPushButton("&Скриншот", self)
         screen_btn.setFixedSize(100, 30)
-        screen_btn.clicked.connect(lambda make_screen: screen_window.setWindowOpacity(0.1))
+        screen_btn.clicked.connect(create_screenshot_window)
 
         self.layout.addWidget(title_translate)
         self.layout.addWidget(self.text_translate)
@@ -133,21 +133,23 @@ class QLabelBuddy(QDialog):
         self.layout.addWidget(screen_btn)
 
 
+def create_screenshot_window():
+    screen_window = ScreenshotWindow(q_label_buddy)
+    screen_window.showFullScreen()
+    screen_window.setWindowOpacity(0.1)
+    screen_window.show()
+    event_loop = QEventLoop()
+    event_loop.exec_()
+
+
 if __name__ == '__main__':
     # TODO:
-    #  1. Убрать мёртвый код +
-    #  2. Добавить переводчик от deepl (невозможно), использовал libre +
-    #  3. Задать горячие клавиши
-    #  4. Исправить проблему с окнами
-    #  5. Открывать libretranslate и закрывать её в отдельном потоке
-    #  6. Выпилить дурацкие переводчики
-    #  7. Очистить requirements от
+    #  1. Задать горячие клавиши
+    #  2. Открывать libretranslate и закрывать её в отдельном потоке
+    #  3. Очистить requirements
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()
-    screen_window = ScreenshotWindow(q_label_buddy)
-    screen_window.showFullScreen()
-
     q_label_buddy.show()
-    screen_window.show()
+
     sys.exit(q_label_buddy.exec_())
