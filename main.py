@@ -1,17 +1,14 @@
-import asyncio
+import json
 
-import pyrogram
 import sys
 
-import pytesseract
+import requests
 from PIL import Image
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
 from langchain.schema import HumanMessage, SystemMessage
-from langchain.chat_models.gigachat import GigaChat
-
-import config
+from pytesseract import pytesseract
 
 pytesseract_string = None
 
@@ -78,50 +75,23 @@ class QLabelBuddy(QDialog):
         self.text_to_translate = None
         self.layout = None
         self.init_ui()
-        self.app = pyrogram.Client(config.name, config.api_id, config.api_hash)
         self.message_text = None
 
-    def translate_giga_chat_bot(self, text):
-        # TODO:
-        #  1. Добавить эти инициализации в класс если задан определённый параметр
-        messages = [
-            SystemMessage(
-                content="Переведи текст"
-            )
-        ]
-
-        chat = GigaChat(
-            credentials=config.credentials,
-            verify_ssl_certs=False)
-
-        messages.append(HumanMessage(content=f'Переведи: {text}'))
-        res = chat(messages)
-        messages.append(res)
-
-        self.message_text = res.content
-
     def translate_text(self):
-        if config.SETTINGS['choose_translate'] == 'gigachat':
-            self.translate_giga_chat_bot(self.text_to_translate.toPlainText())
-
-        else:
-            self.app.run(self.async_translate_text(self.text_to_translate.toPlainText()))
-
+        self.libretranslate_translate_text(self.text_to_translate.toPlainText())
         self.text_translate.setPlainText(self.message_text)
 
-    async def async_translate_text(self, text):
-        try:
-            await self.app.start()
-            await self.app.send_message(chat_id='YTranslateBot', text=text)
-            await asyncio.sleep(1)
-            async for message in self.app.get_chat_history(chat_id='YTranslateBot', limit=1, offset_id=-1):
-                self.message_text = message.text
-
-        except Exception as e:
-            print(e)
-
-        finally:
-            await self.app.stop()
+    def libretranslate_translate_text(self, text):
+        url = "http://127.0.0.1:5000/translate"
+        data = {
+            "q": f"{text}",
+            "source": "en",
+            "target": "ru",
+            "format": "text",
+            "api_key": ""
+        }
+        headers = {"Content-Type": "application/json"}
+        self.message_text = requests.post(url, data=json.dumps(data), headers=headers).json()['translatedText']
 
     def init_ui(self):
         self.layout = QVBoxLayout(self)
@@ -166,9 +136,12 @@ class QLabelBuddy(QDialog):
 if __name__ == '__main__':
     # TODO:
     #  1. Убрать мёртвый код +
-    #  2. Добавить переводчик от deepl
+    #  2. Добавить переводчик от deepl (невозможно), использовал libre +
     #  3. Задать горячие клавиши
     #  4. Исправить проблему с окнами
+    #  5. Открывать libretranslate и закрывать её в отдельном потоке
+    #  6. Выпилить дурацкие переводчики
+    #  7. Очистить requirements от
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()
