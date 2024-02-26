@@ -1,4 +1,5 @@
 import json
+import os
 
 import sys
 
@@ -7,7 +8,6 @@ from PIL import Image
 from PyQt5.QtCore import Qt, QRect, QEventLoop
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
-from langchain.schema import HumanMessage, SystemMessage
 from pytesseract import pytesseract
 
 pytesseract_string = None
@@ -76,6 +76,7 @@ class QLabelBuddy(QDialog):
         self.layout = None
         self.init_ui()
         self.message_text = None
+        os.popen('libretranslate')
 
     def translate_text(self):
         self.libretranslate_translate_text(self.text_to_translate.toPlainText())
@@ -145,8 +146,9 @@ def create_screenshot_window():
 if __name__ == '__main__':
     # TODO:
     #  1. Задать горячие клавиши
-    #  2. Открывать libretranslate и закрывать её в отдельном потоке
-    #  3. Очистить requirements
+    #  2. Открывать libretranslate и закрывать её в отдельном потоке +
+    #  3. Очистить requirements +
+    #  4. Написать readme +
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()
