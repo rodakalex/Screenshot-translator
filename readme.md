@@ -14,6 +14,8 @@ pip install -r requirements.txt
 
 ## Windows
 
+Также для windows скорее всего потребуется на WSL установить пакет libretranslate
+
 ```bash
 python -m venv venv
 .\venv\Scripts\activate
