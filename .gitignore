@@ -2,9 +2,6 @@
 /mangaTranslator/.venv/
 /mangaTranslator/.idea/
 /.idea/
-/vika/
-/config.py
-/temp.py
-/config.py
-/wtftest.session
-/session.session
+/db/
+/db/
+/db/sessions/
