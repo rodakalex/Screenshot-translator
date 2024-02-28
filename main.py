@@ -90,7 +90,12 @@ class QLabelBuddy(QDialog):
             "api_key": ""
         }
         headers = {"Content-Type": "application/json"}
-        self.message_text = requests.post(url, data=json.dumps(data), headers=headers).json()['translatedText']
+        post = requests.post(url, data=json.dumps(data), headers=headers)
+
+        if post.status_code == 200:
+            self.message_text = post.json()['translatedText']
+
+        print(post.json(), post.status_code)
 
     def init_ui(self):
         self.layout = QVBoxLayout(self)
@@ -134,9 +139,9 @@ class QLabelBuddy(QDialog):
 
 def create_screenshot_window():
     screen_window = ScreenshotWindow(q_label_buddy)
-    screen_window.showFullScreen()
-    screen_window.setWindowOpacity(0.1)
     screen_window.show()
+    screen_window.setWindowOpacity(0.1)
+    screen_window.showFullScreen()
     event_loop = QEventLoop()
     event_loop.exec_()
 
