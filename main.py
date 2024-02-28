@@ -1,6 +1,5 @@
 import json
 import os
-
 import sys
 
 import requests
@@ -76,7 +75,6 @@ class QLabelBuddy(QDialog):
         self.layout = None
         self.init_ui()
         self.message_text = None
-        os.popen('libretranslate')
 
     def translate_text(self):
         self.libretranslate_translate_text(self.text_to_translate.toPlainText())
@@ -146,9 +144,7 @@ def create_screenshot_window():
 if __name__ == '__main__':
     # TODO:
     #  1. Задать горячие клавиши
-    #  2. Открывать libretranslate и закрывать её в отдельном потоке +
-    #  3. Очистить requirements +
-    #  4. Написать readme +
+    #  2. Написать файл инсталлера
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()
