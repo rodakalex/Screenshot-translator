@@ -9,6 +9,8 @@ from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
 from pytesseract import pytesseract
 
+from IMMUTABLE_WORDS import immutable_words
+
 pytesseract_string = None
 
 
@@ -48,7 +50,16 @@ class ScreenshotWindow(QMainWindow):
                                                                  screenshot_rect.width(), screenshot_rect.height())
             screenshot.save("screenshot.png", "PNG")
             image = Image.open('screenshot.png')
-            res_text_screen = pytesseract.image_to_string(image, lang='eng').lower().replace("\n", " ")
+
+            res_text_screen: str = pytesseract.image_to_string(image, lang='eng').lower().replace("\n", " ")
+
+            for immutable_word in immutable_words:
+                find_word_pos = res_text_screen.find(immutable_word)
+                next_letter = res_text_screen[find_word_pos + len(immutable_words)]
+                set_symbols = {' ', ',', '.', ';', ':'}
+                if find_word_pos != -1 and next_letter in set_symbols:
+                    print(f'condition {find_word_pos}')
+
             self.app.text_to_translate.setPlainText(res_text_screen)
             self.app.translate_text()
             self.close()
@@ -141,7 +152,8 @@ def create_screenshot_window():
     screen_window = ScreenshotWindow(q_label_buddy)
     screen_window.show()
     screen_window.setWindowOpacity(0.1)
-    screen_window.showFullScreen()
+    # screen_window.showFullScreen()
+    screen_window.show()
     event_loop = QEventLoop()
     event_loop.exec_()
 
@@ -150,6 +162,8 @@ if __name__ == '__main__':
     # TODO:
     #  1. Задать горячие клавиши
     #  2. Написать файл инсталлера
+    #  3. Добавить словарь неизменяемых символов
+    #  4. Добавить всегда большую букву после точки
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()
