@@ -1,5 +1,4 @@
 import json
-import os
 import sys
 
 import requests
@@ -12,6 +11,13 @@ from pytesseract import pytesseract
 from IMMUTABLE_WORDS import immutable_words
 
 pytesseract_string = None
+
+
+def make_first_letter_is_upper(sentence: str):
+    try:
+        return f'{sentence[0].upper()}{sentence[1:]}'
+    except IndexError:
+        return ''
 
 
 class ScreenshotWindow(QMainWindow):
@@ -51,20 +57,22 @@ class ScreenshotWindow(QMainWindow):
             screenshot.save("screenshot.png", "PNG")
             image = Image.open('screenshot.png')
 
-            res_text_screen: str = pytesseract.image_to_string(image, lang='eng').lower().replace("\n", " ")
+            text_from_screen: str = pytesseract.image_to_string(image, lang='eng')
+            metamorph_text = text_from_screen.lower().replace("\n", " ")
 
             for immutable_word in immutable_words:
-                find_word_pos = res_text_screen.find(immutable_word)
-                next_letter = res_text_screen[find_word_pos + len(immutable_words)]
-                set_symbols = {' ', ',', '.', ';', ':'}
-                if find_word_pos != -1 and next_letter in set_symbols:
-                    print(f'condition {find_word_pos}')
+                metamorph_text = metamorph_text.replace(immutable_word, immutable_words.get(immutable_word))
 
-            self.app.text_to_translate.setPlainText(res_text_screen)
+            metamorph_text = '. '.join(map(make_first_letter_is_upper, metamorph_text.split('. ')))
+
+            after_metamorph = metamorph_text
+            print(after_metamorph)
+
+            self.app.text_to_translate.setPlainText(after_metamorph)
             self.app.translate_text()
             self.close()
 
-    def paintEvent(self, event):
+    def paintEvent(self, a0, event=None):
         if self.drawing:
             painter = QPainter(self)
             overlay_color = QColor(255, 255, 255, 100)
@@ -105,8 +113,6 @@ class QLabelBuddy(QDialog):
 
         if post.status_code == 200:
             self.message_text = post.json()['translatedText']
-
-        print(post.json(), post.status_code)
 
     def init_ui(self):
         self.layout = QVBoxLayout(self)
@@ -153,6 +159,8 @@ def create_screenshot_window():
     screen_window.show()
     screen_window.setWindowOpacity(0.1)
     screen_window.showFullScreen()
+    # Если нужно отдебажить захват с экрана
+    # screen_window.show()
     event_loop = QEventLoop()
     event_loop.exec_()
 
@@ -161,8 +169,11 @@ if __name__ == '__main__':
     # TODO:
     #  1. Задать горячие клавиши
     #  2. Написать файл инсталлера
-    #  3. Добавить словарь неизменяемых символов
-    #  4. Добавить всегда большую букву после точки
+    #  3. Добавить всегда большую букву после точки
+    #  4. Добавить обработку спецсимволов
+    #  5. Написать интерфейс для автоисправления
+    #  6. Написать окно настроек программы
+    #  7. Подключить SpellChecker
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()
