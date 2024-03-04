@@ -54,6 +54,7 @@ class ScreenshotWindow(QMainWindow):
 
             screenshot = QApplication.primaryScreen().grabWindow(0, screenshot_rect.x(), screenshot_rect.y(),
                                                                  screenshot_rect.width(), screenshot_rect.height())
+            # Можно закомментировать для отладки
             screenshot.save("screenshot.png", "PNG")
             image = Image.open('screenshot.png')
 

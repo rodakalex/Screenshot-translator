@@ -1,6 +1,6 @@
 immutable_words = {
     'eax': 'EAX',
-    'ax': 'AX',
+    ' ax ': ' AX ',
     'ecx': 'ECX',
     'hyung-nim': 'Hyung-Nim',
     'song-yi': 'Song-Yi',
@@ -16,6 +16,7 @@ immutable_words = {
     '6uy': 'guy',
     'wilo': 'wild',
     'sung il-hwan': 'Sung Il-Hwan',
+    ' mov ': ' MOV '
 }
 
 spec_letters = {'\'', ',', '.', '!'}
