@@ -7,6 +7,8 @@ from PyQt5.QtCore import Qt, QRect, QEventLoop
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import *
 from pytesseract import pytesseract
+from PyQt5.QtWidgets import QShortcut
+from PyQt5.QtGui import QKeySequence
 
 from IMMUTABLE_WORDS import immutable_words
 
@@ -94,6 +96,7 @@ class QLabelBuddy(QDialog):
         self.text_to_translate = None
         self.layout = None
         self.init_ui()
+        self.init_hotkeys()
         self.message_text = None
 
     def translate_text(self):
@@ -154,6 +157,11 @@ class QLabelBuddy(QDialog):
         self.layout.addWidget(translate_btn)
         self.layout.addWidget(screen_btn)
 
+    def init_hotkeys(self):
+        shortcut = QShortcut(QKeySequence('Ctrl+Space'), self)
+        shortcut.setContext(Qt.ApplicationShortcut)
+        shortcut.activated.connect(create_screenshot_window)
+
 
 def create_screenshot_window():
     screen_window = ScreenshotWindow(q_label_buddy)
@@ -168,13 +176,15 @@ def create_screenshot_window():
 
 if __name__ == '__main__':
     # TODO:
-    #  1. Задать горячие клавиши
     #  2. Написать файл инсталлера
     #  3. Добавить всегда большую букву после точки
     #  4. Добавить обработку спецсимволов
     #  5. Написать интерфейс для автоисправления
     #  6. Написать окно настроек программы
     #  7. Подключить SpellChecker
+    #  8. Сделать так, чтобы программа сразу закрывалась на крестик
+    #  9. Актуализировать readme
+    #  10. Переписать readme на английский
 
     q_application = QApplication([])
     q_label_buddy = QLabelBuddy()

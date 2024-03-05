@@ -16,7 +16,19 @@ immutable_words = {
     '6uy': 'guy',
     'wilo': 'wild',
     'sung il-hwan': 'Sung Il-Hwan',
-    ' mov ': ' MOV '
+    ' mov ': ' MOV ',
+    ' dword ': ' DWORD ',
+    ' add ': ' ADD ',
+    ' sub ': ' SUB ',
+    '[edx]': '[EDX]',
+    ' edx ': ' EDX ',
+    ' 4iv ': ' DIV ',
+    ' mu1 ': ' MUL ',
+    ' mu1, ': ' MUL, ',
+    ' edx. ': ' EDX. ',
+    ' aiv ': ' DIV ',
+    ' mu1\'s ': ' MUL\'s ',
+    ' div ': ' DIV ',
 }
 
 spec_letters = {'\'', ',', '.', '!'}
